@@ -8,20 +8,49 @@
 </head>
 <body>
 
-    <h1>Catálogo de Produtos</h1>
+<header>
+    <nav class="menu" aria-label="Menu principal">
+        <ul>
+            <li><a href="#">Início</a></li>
+            <li><a href="#">Contato</a></li>
+            <li><a href="#">Sobre</a></li>
+        </ul>
+    </nav>
+</header>
 
-    <!-- GRID DE PRODUTOS -->
-    <div id="produtos" class="grid-produtos"></div>
+<main>
 
-    <!-- PAGINAÇÃO -->
-    <div class="paginacao">
-        <button id="anterior">Anterior</button>
-        <span id="paginaAtual"></span>
-        <button id="proximo">Próximo</button>
-    </div>
+    <!-- OFERTAS -->
+    <article>
+        <h1>Ofertas</h1>
 
-    <script src="./js.js"></script>
-	
+        <!-- GRID DE OFERTAS -->
+        <div id="ofertas" class="grid-produtos"></div>
+    </article>
+
+    <!-- CATÁLOGO -->
+    <article>
+        <h1>Catálogo de Produtos</h1>
+
+        <!-- GRID DE PRODUTOS -->
+        <div id="produtos" class="grid-produtos"></div>
+
+        <!-- PAGINAÇÃO -->
+        <div class="paginacao">
+            <button id="anterior" type="button">Anterior</button>
+            <span id="paginaAtual"></span>
+            <button id="proximo" type="button">Próximo</button>
+        </div>
+    </article>
+
+</main>
+
+<footer>
+    <p>&copy; 2026 Witalo Lopes. Todos os direitos reservados.</p>
+</footer>
+
+<!-- SCRIPT -->
+<script src="./js.js"></script>
+
 </body>
 </html>
-<!-- force deploy -->
