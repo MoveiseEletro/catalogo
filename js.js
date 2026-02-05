@@ -97,9 +97,26 @@ function renderizarProdutos() {
     const el = document.getElementById('produtos');
     el.innerHTML = '';
 
-    dados.slice(0, ITENS_POR_PAGINA).forEach(l => {
+    const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
+    const fim = inicio + ITENS_POR_PAGINA;
+
+    dados.slice(inicio, fim).forEach(l => {
         el.innerHTML += criarCard(l);
     });
 
-    document.getElementById('paginaAtual').innerText = 'Página 1';
+    const totalPaginas = Math.ceil(dados.length / ITENS_POR_PAGINA);
+    document.getElementById('paginaAtual').innerText =
+        `Página ${paginaAtual} de ${totalPaginas}`;
 }
+
+document.getElementById('proximo').onclick = () => {
+    paginaAtual++;
+    renderizarProdutos();
+};
+
+document.getElementById('anterior').onclick = () => {
+    if (paginaAtual > 1) {
+        paginaAtual--;
+        renderizarProdutos();
+    }
+};
