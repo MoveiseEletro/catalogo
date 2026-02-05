@@ -1,97 +1,105 @@
-const ITENS_POR_PAGINA = 30;
+const ITENS_POR_PAGINA = 20;
+const INTERVALO = 4000;
 
 let dados = [];
+let ofertas = [];
 let paginaAtual = 1;
-let indiceCodigo = -1;
-let indiceNome = -1;
-let indicePreco = -1;
-let indiceEstoque = -1;
+let indiceCarrossel = 0;
+let timer = null;
 
 fetch('./produto.csv')
-    .then(response => response.text())
+    .then(r => r.text())
     .then(csv => {
         const linhas = csv.trim().split(/\r?\n/);
+        const cab = linhas.shift().split(';');
 
-        linhas.forEach((linha, index) => {
-            const colunas = linha.trim().split(';');
-            if (colunas.length < 4) return;
+        const idx = {
+            codigo: cab.indexOf('CODIGO'),
+            nome: cab.indexOf('MERCADORIA'),
+            preco: cab.indexOf('PRECO'),
+            estoque: cab.indexOf('ESTOQUE'),
+            oferta: cab.indexOf('OFERTA')
+        };
 
-            if (index === 0) {
-                colunas.forEach((col, i) => {
-                    const nomeCol = col.toUpperCase();
-                    if (nomeCol === 'CODIGO') indiceCodigo = i;
-                    if (nomeCol === 'MERCADORIA') indiceNome = i;
-                    if (nomeCol === 'PRECO') indicePreco = i;
-                    if (nomeCol === 'ESTOQUE') indiceEstoque = i;
-                });
-            } else {
-                const estoque = parseInt(colunas[indiceEstoque], 10);
-                if (!isNaN(estoque) && estoque > 0) {
-                    dados.push(colunas);
-                }
+        linhas.forEach(l => {
+            const c = l.split(';');
+            if (parseInt(c[idx.estoque]) > 0) {
+                dados.push(c);
+                if (c[idx.oferta] === 'SIM') ofertas.push(c);
             }
         });
 
         renderizarProdutos();
-        configurarPaginacao();
+        renderizarOfertas();
+        iniciar();
     });
 
-function renderizarProdutos() {
-    const container = document.getElementById('produtos');
-    container.innerHTML = '';
+function itensPorTela() {
+    return window.innerWidth <= 600 ? 2 : 5;
+}
 
-    const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
-    const fim = inicio + ITENS_POR_PAGINA;
-
-    dados.slice(inicio, fim).forEach(linha => {
-        const codigo = linha[indiceCodigo].padStart(4, '0');
-        const nome = linha[indiceNome];
-        const precoBruto = linha[indicePreco];
-
-        const num = parseFloat(precoBruto.replace(',', '.'));
-        const preco = !isNaN(num)
-            ? num.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-            : precoBruto;
-
-        const card = document.createElement('div');
-        card.className = 'produto';
-
-        card.innerHTML = `
+function criarCard(l) {
+    const codigo = l[0].padStart(4,'0');
+    return `
+        <div class="produto">
             <div class="foto">
                 <img src="./imagens/${codigo}-1.webp"
-                     alt="${nome}"
-                     loading="lazy"
                      onerror="this.src='./imagens/sem-foto.webp'">
             </div>
             <div class="info">
-                <h3>${nome}</h3>
-                <div class="preco">${preco}</div>
+                <h3>${l[1]}</h3>
+                <div class="preco">R$ ${l[3]}</div>
             </div>
-        `;
-
-        container.appendChild(card);
-    });
-
-    document.getElementById('paginaAtual').innerText =
-        `Página ${paginaAtual} de ${Math.ceil(dados.length / ITENS_POR_PAGINA)}`;
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+        </div>
+    `;
 }
 
-function configurarPaginacao() {
-    const totalPaginas = Math.ceil(dados.length / ITENS_POR_PAGINA);
+/* OFERTAS */
+function renderizarOfertas() {
+    const el = document.getElementById('ofertas');
+    el.innerHTML = '';
 
-    document.getElementById('anterior').onclick = () => {
-        if (paginaAtual > 1) {
-            paginaAtual--;
-            renderizarProdutos();
-        }
-    };
+    const total = itensPorTela();
+    for (let i = 0; i < total; i++) {
+        const idx = (indiceCarrossel + i) % ofertas.length;
+        el.innerHTML += criarCard(ofertas[idx]);
+    }
+}
 
-    document.getElementById('proximo').onclick = () => {
-        if (paginaAtual < totalPaginas) {
-            paginaAtual++;
-            renderizarProdutos();
-        }
-    };
+function proximo() {
+    indiceCarrossel++;
+    renderizarOfertas();
+    reset();
+}
+
+function anterior() {
+    indiceCarrossel--;
+    if (indiceCarrossel < 0) indiceCarrossel = ofertas.length - 1;
+    renderizarOfertas();
+    reset();
+}
+
+function iniciar() {
+    timer = setInterval(proximo, INTERVALO);
+}
+
+function reset() {
+    clearInterval(timer);
+    iniciar();
+}
+
+document.querySelector('.next').onclick = proximo;
+document.querySelector('.prev').onclick = anterior;
+window.addEventListener('resize', renderizarOfertas);
+
+/* CATÁLOGO */
+function renderizarProdutos() {
+    const el = document.getElementById('produtos');
+    el.innerHTML = '';
+
+    dados.slice(0, ITENS_POR_PAGINA).forEach(l => {
+        el.innerHTML += criarCard(l);
+    });
+
+    document.getElementById('paginaAtual').innerText = 'Página 1';
 }
