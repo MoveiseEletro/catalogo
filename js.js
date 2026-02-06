@@ -39,7 +39,7 @@ function itensPorTela() {
 }
 
 function criarCard(l) {
-    const codigo = l[idx.codigo].trim();
+    const codigo = l[0].padStart(4,'0');
     return `
         <div class="produto">
             <div class="foto">
