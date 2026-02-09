@@ -18,7 +18,6 @@ fetch('./produto.csv')
             nome: cab.indexOf('MERCADORIA'),
             preco: cab.indexOf('PRECO'),
             estoque: cab.indexOf('ESTOQUE'),
-            oferta: cab.indexOf('OFERTA')
         };
 
         linhas.forEach(l => {
@@ -30,7 +29,6 @@ fetch('./produto.csv')
         });
 
         renderizarProdutos();
-        renderizarOfertas();
         iniciar();
     });
 
@@ -52,18 +50,6 @@ function criarCard(l) {
             </div>
         </div>
     `;
-}
-
-/* OFERTAS */
-function renderizarOfertas() {
-    const el = document.getElementById('ofertas');
-    el.innerHTML = '';
-
-    const total = itensPorTela();
-    for (let i = 0; i < total; i++) {
-        const idx = (indiceCarrossel + i) % ofertas.length;
-        el.innerHTML += criarCard(ofertas[idx]);
-    }
 }
 
 function proximo() {
