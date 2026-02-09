@@ -1,43 +1,28 @@
 const ITENS_POR_PAGINA = 20;
-const INTERVALO = 4000;
 
 let dados = [];
-let ofertas = [];
 let paginaAtual = 1;
-let indiceCarrossel = 0;
-let timer = null;
 
+/* ===== CARREGAR CSV ===== */
 fetch('./produto.csv')
     .then(r => r.text())
     .then(csv => {
         const linhas = csv.trim().split(/\r?\n/);
-        const cab = linhas.shift().split(';');
-
-        const idx = {
-            codigo: cab.indexOf('CODIGO'),
-            nome: cab.indexOf('MERCADORIA'),
-            preco: cab.indexOf('PRECO'),
-            estoque: cab.indexOf('ESTOQUE'),
-        };
+        linhas.shift(); // remove cabeçalho
 
         linhas.forEach(l => {
             const c = l.split(';');
-            if (parseInt(c[idx.estoque]) > 0) {
+            if (parseInt(c[3]) > 0) { // estoque
                 dados.push(c);
-                if (c[idx.oferta] === 'SIM') ofertas.push(c);
             }
         });
 
         renderizarProdutos();
-        iniciar();
     });
 
-function itensPorTela() {
-    return window.innerWidth <= 600 ? 2 : 5;
-}
-
+/* ===== CARD ===== */
 function criarCard(l) {
-    const codigo = l[0].padStart(4,'0');
+    const codigo = l[0].padStart(4, '0');
     return `
         <div class="produto">
             <div class="foto">
@@ -52,36 +37,15 @@ function criarCard(l) {
     `;
 }
 
-function proximo() {
-    indiceCarrossel++;
-    renderizarOfertas();
-    reset();
-}
-
-function anterior() {
-    indiceCarrossel--;
-    if (indiceCarrossel < 0) indiceCarrossel = ofertas.length - 1;
-    renderizarOfertas();
-    reset();
-}
-
-function iniciar() {
-    timer = setInterval(proximo, INTERVALO);
-}
-
-function reset() {
-    clearInterval(timer);
-    iniciar();
-}
-
-document.querySelector('.next').onclick = proximo;
-document.querySelector('.prev').onclick = anterior;
-window.addEventListener('resize', renderizarOfertas);
-
-/* CATÁLOGO */
+/* ===== CATÁLOGO ===== */
 function renderizarProdutos() {
     const el = document.getElementById('produtos');
     el.innerHTML = '';
+
+    const totalPaginas = Math.ceil(dados.length / ITENS_POR_PAGINA);
+
+    if (paginaAtual < 1) paginaAtual = 1;
+    if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
 
     const inicio = (paginaAtual - 1) * ITENS_POR_PAGINA;
     const fim = inicio + ITENS_POR_PAGINA;
@@ -90,19 +54,21 @@ function renderizarProdutos() {
         el.innerHTML += criarCard(l);
     });
 
-    const totalPaginas = Math.ceil(dados.length / ITENS_POR_PAGINA);
     document.getElementById('paginaAtual').innerText =
         `Página ${paginaAtual} de ${totalPaginas}`;
+
+    // desativa botões corretamente
+    document.getElementById('anterior').disabled = paginaAtual === 1;
+    document.getElementById('proximo').disabled = paginaAtual === totalPaginas;
 }
 
+/* ===== BOTÕES ===== */
 document.getElementById('proximo').onclick = () => {
     paginaAtual++;
     renderizarProdutos();
 };
 
 document.getElementById('anterior').onclick = () => {
-    if (paginaAtual > 1) {
-        paginaAtual--;
-        renderizarProdutos();
-    }
+    paginaAtual--;
+    renderizarProdutos();
 };
